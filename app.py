@@ -9,14 +9,33 @@ from Gradio_UI import GradioUI
 
 # Below is an example of a tool that does nothing. Amaze us with your creativity !
 @tool
-def my_custom_tool(arg1:str, arg2:int)-> str: #it's import to specify the return type
-    #Keep this format for the description / args / args description but feel free to modify the tool
-    """A tool that does nothing yet 
+def generate_weather_image(location: str) -> Image:
+    """Generate an image showing the current weather in a requested location.
     Args:
-        arg1: the first argument
-        arg2: the second argument
+        location: City or place name, for example 'London' or 'Tokyo'.
     """
-    return "What magic will you build ?"
+    response = requests.get(
+        f"https://wttr.in/{location}",
+        params={"format": "j1"},
+        timeout=20,
+    )
+    response.raise_for_status()
+    data = response.json()
+
+    current = data["current_condition"][0]
+    description = current["weatherDesc"][0]["value"]
+    temp_c = current["temp_C"]
+    feels_like_c = current["FeelsLikeC"]
+    humidity = current["humidity"]
+
+    prompt = (
+        f"A realistic scene in {location} with {description} weather, "
+        f"temperature {temp_c}C, feels like {feels_like_c}C, humidity {humidity}%. "
+        f"Show the sky, light, clouds, ground conditions, and people/clothing matching this weather. "
+        f"High detail, atmospheric, realistic."
+    )
+
+    return image_generation_tool(prompt)
 
 @tool
 def get_current_time_in_timezone(timezone: str) -> str:
