@@ -1,11 +1,23 @@
+import argparse
+import os
+from pathlib import Path
+
 from smolagents import CodeAgent,DuckDuckGoSearchTool, HfApiModel,load_tool,tool
+from smolagents.agent_types import AgentImage
+from smolagents.memory import FinalAnswerStep
 import datetime
 import requests
 import pytz
 import yaml
 from tools.final_answer import FinalAnswerTool
 from PIL.Image import Image
-from smolagents import GradioUI
+from Gradio_UI import GradioUI
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
+DEFAULT_PROMPT = "give me image of current weather in Mogilev"
 
 # Below is an example of a tool that does nothing. Amaze us with your creativity !
 @tool
@@ -88,5 +100,55 @@ agent = CodeAgent(
     prompt_templates=prompt_templates
 )
 
+def run_agent_prompt(task: str):
+    """Run the agent once from the terminal with a prompt."""
+    print(f"Running agent with prompt: {task}")
+    result = agent.run(task)
 
-GradioUI(agent).launch()
+    if isinstance(result, FinalAnswerStep):
+        result = result.final_answer
+
+    if isinstance(result, AgentImage):
+        output_path = Path("generated_weather_mogilev.png")
+        result.save(output_path)
+        print(f"Image saved to: {output_path.resolve()}")
+        return
+
+    if isinstance(result, Image):
+        output_path = Path("generated_weather_mogilev.png")
+        result.save(output_path)
+        print(f"Image saved to: {output_path.resolve()}")
+        return
+
+    print("Agent result:")
+    print(result)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run the weather agent in Gradio UI mode or directly from the terminal."
+    )
+    parser.add_argument(
+        "--prompt",
+        help="Run the agent once with the provided prompt instead of launching the UI.",
+    )
+    parser.add_argument(
+        "--run-mogilev-weather",
+        action="store_true",
+        help="Run the agent once with the built-in prompt: 'give me image of current weather in Mogilev'.",
+    )
+    args = parser.parse_args()
+
+    if args.prompt:
+        run_agent_prompt(args.prompt)
+        return
+
+    if args.run_mogilev_weather:
+        run_agent_prompt(DEFAULT_PROMPT)
+        return
+
+    GradioUI(agent).launch()
+
+
+if __name__ == "__main__":
+    main()

@@ -21,7 +21,7 @@ from typing import Optional
 
 from smolagents.agent_types import AgentAudio, AgentImage, AgentText, handle_agent_output_types
 from smolagents.agents import ActionStep, MultiStepAgent
-from smolagents.memory import MemoryStep
+from smolagents.memory import FinalAnswerStep, MemoryStep
 from smolagents.utils import _is_package_available
 
 
@@ -154,6 +154,8 @@ def stream_to_gradio(
             yield message
 
     final_answer = step_log  # Last log is the run's final_answer
+    if isinstance(final_answer, FinalAnswerStep):
+        final_answer = final_answer.final_answer
     final_answer = handle_agent_output_types(final_answer)
 
     if isinstance(final_answer, AgentText):
@@ -266,12 +268,11 @@ class GradioUI:
             file_uploads_log = gr.State([])
             chatbot = gr.Chatbot(
                 label="Agent",
-                type="messages",
                 avatar_images=(
                     None,
                     "https://huggingface.co/datasets/agents-course/course-images/resolve/main/en/communication/Alfred.png",
                 ),
-                resizeable=True,
+                resizable=True,
                 scale=1,
             )
             # If an upload folder is provided, enable the upload feature
