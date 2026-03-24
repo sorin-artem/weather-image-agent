@@ -1,18 +1,12 @@
----
-title: First Agent Template
-emoji: ⚡
-colorFrom: pink
-colorTo: yellow
-sdk: gradio
-sdk_version: 5.23.1
-app_file: app.py
-pinned: false
-tags:
-- smolagents
-- agent
-- smolagent
-- tool
-- agent-course
----
+# Weather Image Agent
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+Small Python agent that checks the current weather for a location and generates a matching image.
+
+## Run
+
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+Set `HF_TOKEN` in `.env` before running.
